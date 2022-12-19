@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import CategoryPage from "./pages/Management/Categories/index";
+import CustomerPage from "./pages/Management/Customers/index";
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/management/categories" element={<CategoryPage />} />
+          <Route path="/management/customers" element={<CustomerPage />} />
           {/* NO MATCH ROUTE */}
           <Route
             path="*"
