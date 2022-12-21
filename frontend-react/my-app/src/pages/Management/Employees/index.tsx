@@ -1,16 +1,23 @@
 import React from "react";
-import { message, Table } from "antd";
-import { axiosClient } from "../../../libraries/axiosClient";
-import { Form, Input, Button, Space, Popconfirm, Modal } from "antd";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  Table,
+  Form,
+  Input,
+  Button,
+  message,
+  Space,
+  Popconfirm,
+  Modal,
+} from "antd";
 import moment from "moment";
-
-function CustomerPage() {
-  const customerColumns = [
+import { axiosClient } from "../../../libraries/axiosClient";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+function EmployeePage() {
+  const employeeColumns = [
     {
       title: "Fullname",
       dataIndex: "fullName",
-      key: "name",
+      key: "fullName",
       width: "18%",
       render: (text: string) => {
         return <strong style={{ color: "blue" }}>{text}</strong>;
@@ -34,16 +41,22 @@ function CustomerPage() {
       key: "email",
       width: "18%",
       render: (text: string) => {
-        return <strong style={{ color: "brown" }}>{text}</strong>;
+        return <strong style={{ color: "green" }}>{text}</strong>;
       },
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
+      width: "18%",
     },
     {
       title: "Birthday",
       dataIndex: "birthday",
       key: "birthday",
       width: "18%",
-      render: (text: string) => {
-        return <strong>{moment(text).format("DD/MM/yyyy")}</strong>;
+      render: (record: string) => {
+        return <strong>{moment(record).format("DD/MM/yyyy")}</strong>;
       },
     },
     {
@@ -56,18 +69,21 @@ function CustomerPage() {
             <Popconfirm
               title="Are you sure to delete this row?"
               onConfirm={() => {
+                const id = record._id;
+                //Delete:
                 axiosClient
-                  .delete("/customers/" + record._id)
+                  .delete("/employees/" + id)
                   .then((response) => {
                     message.success("Deleted successfully!");
                     setRefresh((f) => {
                       return f + 1;
                     });
                   })
-                  .catch((errror) => {
+                  .catch((error) => {
                     message.error("Deleted failed!");
-                    console.log("Error:", errror);
+                    console.log("Error:", error);
                   });
+
                 console.log("Delete:", record);
               }}
               onCancel={() => {}}
@@ -80,10 +96,10 @@ function CustomerPage() {
               type="dashed"
               icon={<EditOutlined />}
               onClick={() => {
-                setSelectedRecord(record);
                 setIsVisibleEditForm(true);
+                setSelectedRecord(record);
                 updateForm.setFieldsValue(record);
-                console.log("Selected Record", record);
+                console.log("Selected record:", record);
               }}
             ></Button>
           </Space>
@@ -92,62 +108,61 @@ function CustomerPage() {
     },
   ];
   //set useState:
-  const [customers, setCustomers] = React.useState([]);
+  const [employees, setEmployees] = React.useState([]);
   const [refresh, setRefresh] = React.useState(0);
   const [isVisibleEditForm, setIsVisibleEditForm] = React.useState(false);
   const [selectedRecord, setSelectedRecord] = React.useState<any>(null);
 
   //set useEffect:
   React.useEffect(() => {
-    axiosClient.get("/customers").then((response) => {
-      setCustomers(response.data);
+    axiosClient.get("/employees").then((response) => {
+      setEmployees(response.data);
     });
   }, [refresh]);
 
   //Thêm mới data:
   const onFinish = (values: any) => {
     axiosClient
-      .post("/customers", values)
+      .post("/employees", values)
       .then((response) => {
         message.success("Added new successfully!");
         setRefresh((f) => {
           return f + 1;
         });
-        createForm.resetFields();
-      })
-      .catch((err) => {
-        message.error("Added new failed!");
-        console.log("Error:", err);
-      });
-  };
-  const onFinishFailed = (error: any) => {
-    console.log("Error:", error);
-  };
-
-  //Sửa data:
-  const onUpdateFinish = (values: any) => {
-    axiosClient
-      .patch("/customers/" + selectedRecord._id, values)
-      .then((response) => {
-        message.success("Updated successfully!");
-        updateForm.resetFields();
-        setRefresh((f) => {
-          return f + 1;
-        });
-        setIsVisibleEditForm(false);
+        createForm.resetFields(); //reset lại các field của form như ban đầu
       })
       .catch((error) => {
-        message.error("Updated failed!");
+        message.error("Added failed!");
         console.log("Error:", error);
       });
   };
-  const onUpdateFinishFailed = (err: any) => {
+  const onFinishFailed = (err: any) => {
     console.log("Error:", err);
+  };
+
+  //Chỉnh sửa data:
+  const onUpdateFinish = (values: any) => {
+    axiosClient
+      .patch("/employees/" + selectedRecord._id, values)
+      .then((response) => {
+        message.success("Updated successfully!");
+        setRefresh((f) => {
+          return f + 1;
+        });
+        updateForm.resetFields();
+        setIsVisibleEditForm(false);
+      })
+      .catch((err) => {
+        message.error("Updated failed!");
+        console.log("Error:", err);
+      });
+  };
+  const onUpdateFinishFailed = (error: any) => {
+    console.log("Error:", error);
   };
 
   const [createForm] = Form.useForm();
   const [updateForm] = Form.useForm();
-
   return (
     <div style={{ padding: "50px" }}>
       <Form
@@ -164,9 +179,18 @@ function CustomerPage() {
         }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
-        autoComplete="off"
+        autoComplete="on"
       >
-        <Form.Item label="First Name" name="firstName">
+        <Form.Item
+          label="First Name"
+          name="firstName"
+          rules={[
+            {
+              required: true,
+              message: "Please input data!",
+            },
+          ]}
+        >
           <Input />
         </Form.Item>
 
@@ -176,16 +200,10 @@ function CustomerPage() {
           rules={[
             {
               required: true,
-              message: "Please input customer last name!",
+              message: "Please input data!",
             },
           ]}
         >
-          <Input />
-        </Form.Item>
-        <Form.Item label="Address" name="address">
-          <Input />
-        </Form.Item>
-        <Form.Item label="Email" name="email">
           <Input />
         </Form.Item>
         <Form.Item
@@ -194,13 +212,46 @@ function CustomerPage() {
           rules={[
             {
               required: true,
-              message: "Please input customer phonenumber!",
+              message: "Please input data!",
             },
           ]}
         >
           <Input />
         </Form.Item>
-        <Form.Item label="Birthday" name="birthday">
+        <Form.Item
+          label="Address"
+          name="address"
+          rules={[
+            {
+              required: true,
+              message: "Please input data!",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            {
+              required: true,
+              message: "Please input data!",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="Birthday"
+          name="birthday"
+          rules={[
+            {
+              required: true,
+              message: "Please input data!",
+            },
+          ]}
+        >
           <Input />
         </Form.Item>
 
@@ -215,11 +266,10 @@ function CustomerPage() {
           </Button>
         </Form.Item>
       </Form>
-      <Table rowKey="_id" dataSource={customers} columns={customerColumns} />
-
+      <Table rowKey="_id" dataSource={employees} columns={employeeColumns} />
       <Modal
         centered
-        title="Update Customer Info"
+        title="Update Employees Info"
         open={isVisibleEditForm}
         onOk={() => {
           updateForm.submit();
@@ -245,7 +295,16 @@ function CustomerPage() {
           onFinishFailed={onUpdateFinishFailed}
           autoComplete="on"
         >
-          <Form.Item label="First Name" name="firstName">
+          <Form.Item
+            label="First Name"
+            name="firstName"
+            rules={[
+              {
+                required: true,
+                message: "Please input data!",
+              },
+            ]}
+          >
             <Input />
           </Form.Item>
 
@@ -255,16 +314,10 @@ function CustomerPage() {
             rules={[
               {
                 required: true,
-                message: "Please input customer last name!",
+                message: "Please input data!",
               },
             ]}
           >
-            <Input />
-          </Form.Item>
-          <Form.Item label="Address" name="address">
-            <Input />
-          </Form.Item>
-          <Form.Item label="Email" name="email">
             <Input />
           </Form.Item>
           <Form.Item
@@ -273,13 +326,46 @@ function CustomerPage() {
             rules={[
               {
                 required: true,
-                message: "Please input customer phonenumber!",
+                message: "Please input data!",
               },
             ]}
           >
             <Input />
           </Form.Item>
-          <Form.Item label="Birthday" name="birthday">
+          <Form.Item
+            label="Address"
+            name="address"
+            rules={[
+              {
+                required: true,
+                message: "Please input data!",
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              {
+                required: true,
+                message: "Please input data!",
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Birthday"
+            name="birthday"
+            rules={[
+              {
+                required: true,
+                message: "Please input data!",
+              },
+            ]}
+          >
             <Input />
           </Form.Item>
         </Form>
@@ -288,4 +374,4 @@ function CustomerPage() {
   );
 }
 
-export default CustomerPage;
+export default EmployeePage;

@@ -27,10 +27,15 @@ router.post("/", (req, res, next) => {
 //Phương thức GET data:
 router.get("/", function (req, res, next) {
   try {
-    Product.find().then((result) => {
-      res.send(result);
-    });
-  } catch (error) {
+    Product.find()
+      // .skip(1) //Bỏ qua 1 object
+      // .limit(3) //Chỉ lấy giới hạn 3 object cho 1 trang
+      .populate("category")
+      .populate("supplier")
+      .then((result) => {
+        res.send(result);
+      });
+  } catch (err) {
     res.sendStatus(500);
   }
 });

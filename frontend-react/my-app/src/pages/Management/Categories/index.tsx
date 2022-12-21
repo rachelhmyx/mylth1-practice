@@ -181,7 +181,7 @@ function CategoryPage() {
           </Button>
         </Form.Item>
       </Form>
-      <Table dataSource={categories} columns={categoryColumns} />
+      <Table rowKey="_id" dataSource={categories} columns={categoryColumns} />
 
       <Modal
         centered
