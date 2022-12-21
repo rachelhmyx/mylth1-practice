@@ -6,6 +6,7 @@ import CategoryPage from "./pages/Management/Categories/index";
 import CustomerPage from "./pages/Management/Customers/index";
 import EmployeePage from "./pages/Management/Employees/index";
 import ProductPage from "./pages/Management/Products/index";
+import SupplierPage from "./pages/Management/Suppliers";
 
 numeral.locale("vi");
 
@@ -18,6 +19,7 @@ function App() {
           <Route path="/management/customers" element={<CustomerPage />} />
           <Route path="/management/employees" element={<EmployeePage />} />
           <Route path="/management/products" element={<ProductPage />} />
+          <Route path="/management/suppliers" element={<SupplierPage />} />
           {/* NO MATCH ROUTE */}
           <Route
             path="*"

@@ -30,6 +30,7 @@ router.get("/", function (req, res, next) {
     Product.find()
       // .skip(1) //Bỏ qua 1 object
       // .limit(3) //Chỉ lấy giới hạn 3 object cho 1 trang
+      .lean({ virtuals: true })
       .populate("category")
       .populate("supplier")
       .then((result) => {
