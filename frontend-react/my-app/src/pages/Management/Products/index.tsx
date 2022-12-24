@@ -24,14 +24,29 @@ function ProductPage() {
   const [selectedRecord, setSelectedRecord] = React.useState<any>(null);
   const [isVisibleEditForm, setIsVisibleEditForm] = React.useState(false);
 
-  const productColumns = [
+  const productColumns: any = [
     {
       title: "Category",
       dataIndex: "category",
       key: "category",
       width: "12%",
-      render: (category: any) => {
-        return <strong style={{ color: "blue" }}>{category?.name}</strong>;
+      filters:
+        categories &&
+        categories.map((c: any) => {
+          return {
+            text: c.name,
+            value: c.name,
+          };
+        }),
+      filterSearch: true,
+      filterMode: "tree",
+      onFilter: (value: any, record: any) => {
+        return record?.category?.name.startsWith(value);
+      },
+      render: (text: any, record: any) => {
+        return (
+          <strong style={{ color: "blue" }}>{record?.category?.name}</strong>
+        );
       },
     },
     {
@@ -39,6 +54,21 @@ function ProductPage() {
       dataIndex: "supplier",
       key: "supplier",
       width: "12%",
+      filters:
+        suppliers &&
+        suppliers.map((s: any) => {
+          return {
+            text: s.name,
+            value: s.name,
+          };
+        }),
+      filterMode: "tree",
+      filterSearch: true,
+      onFilter: (value: any, record: any) => {
+        return record?.supplier?.name.startsWith(value);
+      },
+
+      ellipsis: true,
       render: (supplier: any) => {
         return <strong style={{ color: "blue" }}>{supplier?.name}</strong>;
       },
@@ -56,7 +86,9 @@ function ProductPage() {
       title: "Stock",
       dataIndex: "stock",
       key: "stock",
+      sorter: (a: any, b: any) => a.stock - b.stock,
       width: "12%",
+      ellipsis: true,
       render: (text: number) => {
         return <span>{numeral(text).format("0,0")}</span>;
       },
@@ -66,6 +98,8 @@ function ProductPage() {
       dataIndex: "discount",
       key: "discount",
       width: "12%",
+      sorter: (a: any, b: any) => a.discount - b.discount,
+      ellipsis: true,
       render: (text: number) => {
         return (
           <strong style={{ color: "red" }}>
@@ -79,6 +113,8 @@ function ProductPage() {
       dataIndex: "total",
       key: "total",
       width: "12%",
+      sorter: (a: any, b: any) => a.total - b.total,
+      ellipsis: true,
       render: (text: number) => {
         return (
           <strong style={{ color: "green" }}>
@@ -204,6 +240,7 @@ function ProductPage() {
 
   const [createForm] = Form.useForm();
   const [updateForm] = Form.useForm();
+
   return (
     <div style={{ padding: "50px" }}>
       <Form
@@ -322,7 +359,15 @@ function ProductPage() {
           </Button>
         </Form.Item>
       </Form>
-      <Table rowKey="_id" dataSource={products} columns={productColumns} />
+
+      <Table
+        rowKey="_id"
+        dataSource={products}
+        columns={productColumns}
+        scroll={{
+          y: 300,
+        }}
+      />
 
       <Modal
         centered
