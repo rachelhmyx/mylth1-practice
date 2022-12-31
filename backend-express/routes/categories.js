@@ -3,6 +3,8 @@ const { Category } = require("../models");
 var express = require("express");
 var router = express.Router();
 
+const { findDocuments } = require("../helpers/MongoDBHelper");
+
 mongoose.connect("mongodb://127.0.0.1:27017/MyLTH1-Practice");
 
 //Phương thức POST: thêm mới data, gửi data lên server:
@@ -58,6 +60,85 @@ router.patch("/:id", (req, res, next) => {
       });
   } catch (error) {
     res.sendStatus(500);
+  }
+});
+
+//4-Hiện thị tất cả các sản phẩm của danh mục smart phone mà có  giá <= 5,000,000:
+router.get("/questions/3b", function (req, res, next) {
+  const aggregate = [
+    {
+      $lookup: {
+        from: "products",
+        let: { id: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$$id", "$categoryId"] },
+                  { $gte: ["$price", 5000000] },
+                ],
+              },
+            },
+          },
+        ],
+        as: "products", //<output array field>
+      },
+    },
+
+    // {
+    //   $addFields: { numberOfProducts: { $size: "$products" } }, //Sử dụng $size khi muốn tính số phần tử trong một mảng.
+    // },
+  ];
+
+  findDocuments({ aggregate: aggregate }, "categories")
+    .then((result) => {
+      res.json(result);
+    })
+    .catch((error) => {
+      res.status(400).json(error);
+    });
+});
+
+//Hiện thị tên hàng hóa cho mỗi danh mục:
+router.post("/questions/18B", function (req, res, next) {
+  try {
+    const { name } = req.body;
+    const query = {
+      name: name,
+    };
+    console.log(name);
+    Category.aggregate([
+      { query },
+      {
+        $lookup: {
+          from: "products",
+          let: { id: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$$id", "$categoryId"] },
+              },
+            },
+          ],
+          as: "products", //<output array field>
+        },
+      },
+      {
+        $unwind: {
+          path: "$products",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ])
+      .then((data) => {
+        res.send(data);
+      })
+      .catch((err) => {
+        res.status(400).json(err);
+      });
+  } catch (err) {
+    res.json(err);
   }
 });
 module.exports = router;

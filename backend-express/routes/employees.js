@@ -64,4 +64,7 @@ router.patch("/:id", (req, res, next) => {
   }
 });
 
+//----------------------------------------------------------------------------------------------------------//
+//Hiển thị tất cả các nhân viên có sinh nhật là hôm nay:
+
 module.exports = router;

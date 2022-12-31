@@ -3,6 +3,8 @@ const { Product } = require("../models");
 var express = require("express");
 var router = express.Router();
 
+const { findDocuments } = require("../helpers/MongoDBHelper");
+
 mongoose.connect("mongodb://127.0.0.1:27017/MyLTH1-Practice");
 
 //Phương thức POST: thêm mới data, gửi data lên server:
@@ -67,6 +69,48 @@ router.patch("/:id", (req, res, next) => {
       });
   } catch (error) {
     res.sendStatus(500);
+  }
+});
+
+//--------------------------------------------------------------------------------------------------//
+//QUERY:
+//1-Hiện thị tất cả các mặt hàng có giảm giá <=10%:
+router.get("/questions/1", function (req, res, next) {
+  const query = { discount: { $lte: 10 } };
+  findDocuments({ query }, "products")
+    .then((result) => {
+      res.json(result);
+    })
+    .catch((error) => {
+      res.status(500).json(error);
+    });
+});
+
+//2-Hiển thị tất cả các mặt hàng có stock <= 500:
+router.get("/questions/2", function (req, res, next) {
+  const query = { stock: { $lte: 500 } };
+  findDocuments({ query }, "products")
+    .then((result) => {
+      res.json(result);
+    })
+    .catch((error) => {
+      res.status(500).json(error);
+    });
+});
+
+//3-Hiển thị tất cả các mặt hàng có giá bán sau khi đã giảm giá <= 2.000.000:
+router.get("/questions/3", async (req, res, next) => {
+  try {
+    const s = { $subtract: [100, "$discount"] };
+    const m = { $multiply: ["$price", s] };
+    const d = { $divide: [m, 100] };
+
+    let aggregate = [{ $match: { $expr: { $lte: [d, 2000000] } } }];
+
+    const result = await findDocuments({ aggregate }, "products");
+    res.json({ ok: true, result });
+  } catch (error) {
+    res.status(500).json(error);
   }
 });
 
